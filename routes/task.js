@@ -3,51 +3,98 @@ import { Task } from "../models/task.js";
 const router = express.Router();
 import { isAuthenticated } from "../middlewares/auth.js";
 import { User } from "../models/user.js";
+import ErrorHandler from "../middlewares/error.js";
 
-router.post("/", isAuthenticated, async (req, res) => {
-    const { title, description, priority } = req.body;
-    // console.log(req.body);
-    const today = new Date();
-    const getDate = new Date(today);
-    getDate.setDate(today.getDate() + priority);
-    const due_date = getDate.toLocaleDateString('en-IN');
+router.post("/", isAuthenticated, async (req, res, next) => {
+    try {
+        const { title, description, priority } = req.body;
 
-    const task = await Task.create({ title, description, due_date,user: req.user._id });
-    res.status(201).json(
-        task
-        // message: "Successfully Task Created"
-    );
-})
+        // Calculate due date based on priority
+        const today = new Date();
+        const dueDate = new Date(today);
+        dueDate.setDate(today.getDate() + priority);
+        const formattedDueDate = dueDate.toLocaleDateString('en-IN');
 
-router.get("/",isAuthenticated,async(req,res)=>{
+        // Create a new task
+        const task = await Task.create({
+            title,
+            description,
+            due_date: formattedDueDate,
+            user: req.user._id,
+        });
 
-    // res.status(200).json({ user:req.user._id });
-    const user=req.user._id
-    const tasks = await Task.find({ user });
-    res.status(200).json(tasks);
-
-})
-
-router.get("/:id", isAuthenticated, async (req, res) => {
-    const taskId = req.params.id;
-    const task = await Task.findById(taskId);
-    if (!task) {
-        return res.status(404).json({ message: 'Task not found' });
+        // Return a response with the created task and a message
+        res.status(201).json({
+            message: "Task successfully created",
+        });
+    } catch (error) {
+        // Handle errors and pass to error middleware
+        next(new ErrorHandler("Internal Server Error", 500));
     }
-    res.status(200).json(task);
-})
+});
 
-router.delete("/:id", isAuthenticated, async (req, res) => {
+
+router.get("/", isAuthenticated, async (req, res,next) => {
+    try {
+        const user = req.user._id;
+        const tasks = await Task.find({ user,deleted_at: null });
+        // const tasks = await Task.find({ user });
+
+        // Return a response with tasks and a message
+        res.status(200).json(
+            tasks,
+        );
+    } catch (error) {
+        // Handle errors and pass to error middleware
+        next(new ErrorHandler("Internal Server Error", 500));
+    }
+});
+
+router.get("/:id", isAuthenticated, async (req, res,next) => {
+    try {
+        const taskId = req.params.id;
+        const task = await Task.findById(taskId);
+
+        if (!task) {
+            return next((new ErrorHandler("Task not found", 404)))
+        }
+
+        // Return a response with the task and a message
+        res.status(200).json(
+            task,
+        );
+    } catch (error) {
+        // Handle errors and pass to error middleware
+        next(new ErrorHandler("Internal Server Error", 500));
+    }
+});
+
+
+router.delete("/:id", isAuthenticated, async (req, res,next) => {
     const taskId = req.params.id;
 
-    const task = await Task.findById(taskId)
-    // );
-    if (!task) {
-        return res.status(404).json({ message: 'Task not found' });
+    try {
+        // const task = await Task.findById(taskId);
+        const task = await Task.findById(taskId);
+
+        console.log(task);
+        if (!task) {
+            return next((new ErrorHandler("Task not found", 404)))
+        }
+
+        // Update the task's deleted_at property
+        task.deleted_at = new Date().toLocaleDateString('en-IN');
+        await task.save();
+
+        // Respond with the updated task
+        res.status(200).json({
+            message: 'Task successfully deleted',
+        });
+    } catch (error) {
+        // Handle errors and respond accordingly
+        next((new ErrorHandler("'Internal Server Error'", 500)))
     }
-    task.deleted_at = new Date().toLocaleDateString('en-IN');
-    task.save();
-    res.status(200).json(task);
-})
+});
+
 
 export default router

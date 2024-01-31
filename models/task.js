@@ -30,12 +30,17 @@ const taskSchema = new mongoose.Schema({
   deleted_at: {
     type: String,
     default: null,
+    // select: false 
   },
   due_date: {
     type: String,
     required: true,
   }
   
+});
+
+taskSchema.pre(/^find/, function () {
+  this.where({ deleted_at: null });
 });
 
 export const Task= mongoose.model("Task", taskSchema);

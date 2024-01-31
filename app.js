@@ -3,6 +3,7 @@ import express from "express"
 import subTaskRouter from "./routes/subTask.js"
 import taskRouter from "./routes/task.js"
 import userRouter from "./routes/user.js"
+import {errorMiddleware} from "./middlewares/error.js"
 
 import { config } from "dotenv"
 import cookieParser from "cookie-parser";
@@ -39,6 +40,9 @@ app.all("/*", async (req, res) => {
 
 })
 
-
-
-// // app.use(errorMiddleware)
+app.use(errorMiddleware);
+app.use((err,req,res,next)=>{
+    return res.json(
+        err
+    )
+})

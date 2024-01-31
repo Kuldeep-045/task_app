@@ -26,5 +26,9 @@ const subTaskSchema = new mongoose.Schema({
   },
 });
 
+subTaskSchema.pre('find', function () {
+  this.where({ deleted_at: null });
+});
+
 export const SubTask= mongoose.model("Subtask", subTaskSchema);
 

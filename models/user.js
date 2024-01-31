@@ -1,8 +1,8 @@
 import mongoose, { Schema } from "mongoose";
 
 const schema = new Schema({
-    name: {
-        type: String,
+    phone_number: {
+        type: Number,
         required: true, // You might want to add this if email is a required field
     }, 
     email: {
