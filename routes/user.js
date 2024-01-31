@@ -14,7 +14,7 @@ const sendCookies = (user, res, message, statusCode) => {
         .status(statusCode)
         .cookie("token", token, {
             httpOnly: true,
-            maxAge: 1000 * 60 * 15,
+            maxAge: 1000 * 60 * 60,
         })
         .json({
             success: true,
@@ -65,7 +65,7 @@ router.post("/login", async (req, res, next) => {
         }
 
         // Successful login
-        sendCookies(user, res, `Welcome back, ${user.name}`, 200);
+        sendCookies(user, res, `Welcome back`, 200);
     } catch (error) {
         // Pass the error to the error middleware
         return next(new ErrorHandler("Internal Server Error", 500));

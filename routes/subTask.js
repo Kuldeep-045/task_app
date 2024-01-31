@@ -71,7 +71,6 @@ router.get("/:id", isAuthenticated, async (req, res,next) => {
 
 router.delete("/:id", isAuthenticated, async (req, res,next) => {
     const subTaskId = req.params.id;
-
     try {
         const subTask = await SubTask.findById(subTaskId);
 
@@ -80,8 +79,10 @@ router.delete("/:id", isAuthenticated, async (req, res,next) => {
         }
 
         // Soft delete by updating deleted_at
-        subTask.deleted_at = new Date().toLocaleDateString('en-IN');
-        await subTask.save();
+        // subTask.deleted_at = new Date().toLocaleDateString('en-IN');
+        // await subTask.save();
+        // console.log();
+        await subTask.deleteOne();
 
         res.status(200).json({ message: 'Subtask deleted successfully' });
     } catch (error) {
@@ -89,7 +90,6 @@ router.delete("/:id", isAuthenticated, async (req, res,next) => {
         next(error);
     }
 });
-
 
 
 router.put("/:id", isAuthenticated, async (req, res,next) => {

@@ -4,6 +4,7 @@ const router = express.Router();
 import { isAuthenticated } from "../middlewares/auth.js";
 import { User } from "../models/user.js";
 import ErrorHandler from "../middlewares/error.js";
+import { SubTask } from "../models/subTask.js";
 
 router.post("/", isAuthenticated, async (req, res, next) => {
     try {
@@ -77,14 +78,23 @@ router.delete("/:id", isAuthenticated, async (req, res,next) => {
         // const task = await Task.findById(taskId);
         const task = await Task.findById(taskId);
 
-        console.log(task);
+        // console.log(task);
         if (!task) {
             return next((new ErrorHandler("Task not found", 404)))
         }
 
         // Update the task's deleted_at property
-        task.deleted_at = new Date().toLocaleDateString('en-IN');
-        await task.save();
+        // task.deleted_at = new Date().toLocaleDateString('en-IN');
+        // await task.save();
+        const subTask= await SubTask.find({task_id:task._id})
+        task.deleteOne()
+        const subTaskIdsToDelete = subTask.map(task => task._id);
+
+        // Assuming you have the task model available
+        await SubTask.deleteMany({ _id: { $in: subTaskIdsToDelete } });
+
+
+        
 
         // Respond with the updated task
         res.status(200).json({

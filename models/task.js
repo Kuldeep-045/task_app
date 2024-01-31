@@ -43,4 +43,10 @@ taskSchema.pre(/^find/, function () {
   this.where({ deleted_at: null });
 });
 
+taskSchema.pre('deleteOne', { document: true, query: false }, async function (next) {
+  this.deleted_at = new Date().toLocaleDateString('en-IN');
+  await this.save(); // Soft delete the task
+  next();
+});
+
 export const Task= mongoose.model("Task", taskSchema);
