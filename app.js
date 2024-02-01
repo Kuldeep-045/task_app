@@ -31,10 +31,6 @@ app.get("/", (req, res) => {
     res.send("Nice working");
 })
 
-
-
-
-
 app.all("/*", async (req, res) => {
     res.send("error")
 
